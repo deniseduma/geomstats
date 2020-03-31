@@ -27,14 +27,10 @@ class Euclidean(Manifold):
 
         Returns
         -------
-        belongs : array-like, shape=[n_samples, 1]
+        belongs : array-like, shape=[n_samples,]
         """
-        point = gs.to_ndarray(point, to_ndim=2)
-        n_points, point_dim = point.shape
+        point_dim = point.shape[-1]
         belongs = point_dim == self.dimension
-        belongs = gs.to_ndarray(belongs, to_ndim=1)
-        belongs = gs.to_ndarray(belongs, to_ndim=2, axis=1)
-        belongs = gs.tile(belongs, (n_points, 1))
 
         return belongs
 
@@ -44,13 +40,19 @@ class Euclidean(Manifold):
         Parameters
         ----------
         n_samples: int, optional
+            Number of points to be sampled.
         bound: float, optional
+            Side of the hypercube centered in 0 where uniform sampling happens.
 
         Returns
         -------
         point : array-like, shape=[n_samples, dimension]
+                            or shape=[dimension,]
+            Point sampled in the Euclidean space.
         """
-        size = (n_samples, self.dimension)
+        size = (self.dimension,)
+        if n_samples != 1:
+            size = (n_samples, self.dimension)
         point = bound * (gs.random.rand(*size) - 0.5) * 2
 
         return point
@@ -82,7 +84,6 @@ class EuclideanMetric(RiemannianMetric):
         inner_prod_mat: array-like, shape=[n_samples, dimension, dimension]
         """
         mat = gs.eye(self.dimension)
-        mat = gs.to_ndarray(mat, to_ndim=3)
         return mat
 
     def exp(self, tangent_vec, base_point):
@@ -103,8 +104,6 @@ class EuclideanMetric(RiemannianMetric):
         exp: array-like, shape=[n_samples, dimension]
                           or shape-[n_samples, dimension]
         """
-        tangent_vec = gs.to_ndarray(tangent_vec, to_ndim=2)
-        base_point = gs.to_ndarray(base_point, to_ndim=2)
         exp = base_point + tangent_vec
         return exp
 
@@ -126,7 +125,5 @@ class EuclideanMetric(RiemannianMetric):
         log: array-like, shape=[n_samples, dimension]
                           or shape-[n_samples, dimension]
         """
-        point = gs.to_ndarray(point, to_ndim=2)
-        base_point = gs.to_ndarray(base_point, to_ndim=2)
         log = point - base_point
         return log

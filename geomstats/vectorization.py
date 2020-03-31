@@ -35,10 +35,11 @@ def squeeze_output_dim_0(initial_ndims, point_types):
         Boolean deciding whether to squeeze dim 0 of the output.
     """
     for ndim, point_type in zip(initial_ndims, point_types):
-        vect_ndim = POINT_TYPES_TO_NDIMS[point_type]
-        assert ndim <= vect_ndim
-        if ndim == vect_ndim:
-            return False
+        if point_type != 'else':
+            vect_ndim = POINT_TYPES_TO_NDIMS[point_type]
+            assert ndim <= vect_ndim
+            if ndim == vect_ndim:
+                return False
     return True
 
 
@@ -77,11 +78,12 @@ def squeeze_output_dim_1(result, initial_shapes, point_types):
         return False
 
     for shape, point_type in zip(initial_shapes, point_types):
-        ndim = len(shape)
-        if point_type == 'scalar':
-            assert ndim <= 2
-            if ndim == 2:
-                return False
+        if point_type != 'else':
+            ndim = len(shape)
+            if point_type == 'scalar':
+                assert ndim <= 2
+                if ndim == 2:
+                    return False
     return True
 
 
@@ -116,15 +118,23 @@ def decorator(point_types):
 
             for i_arg, arg in enumerate(args):
                 point_type = point_types[i_arg]
-                if point_type == 'scalar':
-                    arg = gs.array(arg)
-                initial_shapes.append(arg.shape)
-                initial_ndims.append(gs.ndim(arg))
 
                 if point_type == 'scalar':
+                    arg = gs.array(arg)
+
+                if point_type == 'else':
+                    initial_shapes.append(None)
+                    initial_ndims.append(None)
+                else:
+                    initial_shapes.append(arg.shape)
+                    initial_ndims.append(gs.ndim(arg))
+
+                if point_type == 'else':
+                    vect_arg = arg
+                elif point_type == 'scalar':
                     vect_arg = gs.to_ndarray(arg, to_ndim=1)
                     vect_arg = gs.to_ndarray(vect_arg, to_ndim=2, axis=1)
-                else:
+                elif point_type in {'vector', 'matrix'}:
                     vect_arg = gs.to_ndarray(
                         arg, to_ndim=POINT_TYPES_TO_NDIMS[point_type])
                 vect_args.append(vect_arg)

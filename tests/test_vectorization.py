@@ -46,10 +46,19 @@ class TestVectorizationMethods(geomstats.tests.TestCase):
             result = helper.to_scalar(result)
             return result
 
+        @geomstats.vectorization.decorator(
+            ['else', 'vector', 'else', 'vector', 'scalar'])
+        def foo_else(else_a, tangent_vec_a, else_b, tangent_vec_b):
+            result = (else_a + else_b) * gs.einsum(
+                'ni,ni->n', tangent_vec_a, tangent_vec_b)
+            result = helper.to_scalar(result)
+            return result
+
         self.foo = foo
         self.foo_scalar_output = foo_scalar_output
         self.foo_scalar_input_output = foo_scalar_input_output
         self.foo_optional_input = foo_optional_input
+        self.foo_else = foo_else
 
     def test_decorator_with_squeeze_dim0(self):
         vec_a = gs.array([1, 2, 3])
@@ -109,5 +118,15 @@ class TestVectorizationMethods(geomstats.tests.TestCase):
         vec_b = gs.array([0, 1, 0])
         result = self.foo_optional_input(vec_a, vec_b)
         expected = 2
+
+        self.assertAllClose(result, expected)
+
+    def test_decorator_else(self):
+        vec_a = gs.array([1, 2, 3])
+        vec_b = gs.array([0, 1, 0])
+        else_a = 1
+        else_b = 1
+        result = self.foo_else(else_a, vec_a, else_b, vec_b)
+        expected = 4
 
         self.assertAllClose(result, expected)
