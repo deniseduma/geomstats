@@ -138,6 +138,7 @@ def decorator(point_types):
                     vect_arg = gs.to_ndarray(arg, to_ndim=1)
                     vect_arg = gs.to_ndarray(vect_arg, to_ndim=2, axis=1)
                 elif point_type in ['vector', 'matrix']:
+
                     vect_arg = gs.to_ndarray(
                         arg, to_ndim=POINT_TYPES_TO_NDIMS[point_type])
                 vect_args.append(vect_arg)
