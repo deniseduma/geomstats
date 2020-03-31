@@ -31,7 +31,8 @@ class Euclidean(Manifold):
         """
         point_dim = point.shape[-1]
         belongs = point_dim == self.dimension
-
+        if point.ndim == 2:
+            belongs = [belongs] * point.shape[0]
         return belongs
 
     def random_uniform(self, n_samples=1, bound=1.):
