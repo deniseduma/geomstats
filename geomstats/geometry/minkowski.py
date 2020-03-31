@@ -23,14 +23,12 @@ class Minkowski(Manifold):
 
         Returns
         -------
-        belongs : array-like, shape=[n_samples, 1]
+        belongs : array-like, shape=[n_samples,]
         """
-        point = gs.to_ndarray(point, to_ndim=2)
-        n_points, point_dim = point.shape
+        point_dim = point.shape[-1]
         belongs = point_dim == self.dimension
-        belongs = gs.to_ndarray(belongs, to_ndim=1)
-        belongs = gs.to_ndarray(belongs, to_ndim=2, axis=1)
-        belongs = gs.tile(belongs, (n_points, 1))
+        if point.ndim == 2:
+            belongs = [belongs] * point.shape[0]
 
         return belongs
 
@@ -47,7 +45,9 @@ class Minkowski(Manifold):
         points : array-like, shape=[n_samples, dimension]
                  Sampled points.
         """
-        size = (n_samples, self.dimension)
+        size = (self.dimension,)
+        if n_samples != 1:
+            size = (n_samples, self.dimension)
         point = bound * gs.random.rand(*size) * 2 - 1
 
         return point
@@ -78,13 +78,13 @@ class MinkowskiMetric(RiemannianMetric):
         inner_prod_mat = gs.eye(self.dimension - 1, self.dimension - 1)
         first_row = gs.array([0.] * (self.dimension - 1))
         first_row = gs.to_ndarray(first_row, to_ndim=2, axis=1)
-        inner_prod_mat = gs.vstack([gs.transpose(first_row),
-                                    inner_prod_mat])
+        inner_prod_mat = gs.vstack(
+            [gs.transpose(first_row), inner_prod_mat])
 
         first_column = gs.array([-1.] + [0.] * (self.dimension - 1))
         first_column = gs.to_ndarray(first_column, to_ndim=2, axis=1)
-        inner_prod_mat = gs.hstack([first_column,
-                                    inner_prod_mat])
+        inner_prod_mat = gs.hstack(
+            [first_column, inner_prod_mat])
 
         return inner_prod_mat
 
@@ -105,8 +105,6 @@ class MinkowskiMetric(RiemannianMetric):
         exp: array-like, shape=[n_samples, dimension]
                           or shape-[n_samples, dimension]
         """
-        tangent_vec = gs.to_ndarray(tangent_vec, to_ndim=2)
-        base_point = gs.to_ndarray(base_point, to_ndim=2)
         exp = base_point + tangent_vec
         return exp
 
@@ -127,7 +125,5 @@ class MinkowskiMetric(RiemannianMetric):
         log: array-like, shape=[n_samples, dimension]
                           or shape-[n_samples, dimension]
         """
-        point = gs.to_ndarray(point, to_ndim=2)
-        base_point = gs.to_ndarray(base_point, to_ndim=2)
         log = point - base_point
         return log
