@@ -122,7 +122,7 @@ class RiemannianMetric(Connection):
         christoffels = 0.5 * (term_1 + term_2 + term_3)
         return christoffels
 
-    @geomstats.vectorization.decorator(['vector', 'vector', 'vector'])
+    @geomstats.vectorization.decorator(['else', 'vector', 'vector', 'vector'])
     def inner_product(self, tangent_vec_a, tangent_vec_b, base_point=None):
         """Inner product between two tangent vectors at a base point.
 
@@ -139,8 +139,6 @@ class RiemannianMetric(Connection):
         -------
         inner_product : array-like, shape=[n_samples,]
         """
-        tangent_vec_a = gs.to_ndarray(tangent_vec_a, to_ndim=2)
-        tangent_vec_b = gs.to_ndarray(tangent_vec_b, to_ndim=2)
         n_tangent_vec_a = gs.shape(tangent_vec_a)[0]
         n_tangent_vec_b = gs.shape(tangent_vec_b)[0]
 
@@ -181,6 +179,7 @@ class RiemannianMetric(Connection):
         assert gs.ndim(inner_prod) == 2, inner_prod.shape
         return inner_prod
 
+    @geomstats.vectorization.decorator(['else', 'vector', 'vector'])
     def squared_norm(self, vector, base_point=None):
         """Compute the square of the norm of a vector.
 
@@ -197,8 +196,11 @@ class RiemannianMetric(Connection):
         sq_norm : array-like, shape=[n_samples,]
         """
         sq_norm = self.inner_product(vector, vector, base_point)
+        sq_norm = gs.to_ndarray(sq_norm, to_ndim=1)
+        sq_norm = gs.to_ndarray(sq_norm, to_ndim=2, axis=1)
         return sq_norm
 
+    @geomstats.vectorization.decorator(['else', 'vector', 'vector'])
     def norm(self, vector, base_point=None):
         """Compute norm of a vector.
 
@@ -219,8 +221,11 @@ class RiemannianMetric(Connection):
         """
         sq_norm = self.squared_norm(vector, base_point)
         norm = gs.sqrt(sq_norm)
+        norm = gs.to_ndarray(norm, to_ndim=1)
+        norm = gs.to_ndarray(norm, to_ndim=2, axis=1)
         return norm
 
+    @geomstats.vectorization.decorator(['else', 'vector', 'vector'])
     def squared_dist(self, point_a, point_b):
         """Squared geodesic distance between two points.
 
@@ -236,8 +241,11 @@ class RiemannianMetric(Connection):
         log = self.log(point=point_b, base_point=point_a)
         sq_dist = self.squared_norm(vector=log, base_point=point_a)
 
+        sq_dist = gs.to_ndarray(sq_dist, to_ndim=1)
+        sq_dist = gs.to_ndarray(sq_dist, to_ndim=2, axis=1)
         return sq_dist
 
+    @geomstats.vectorization.decorator(['else', 'vector', 'vector'])
     def dist(self, point_a, point_b):
         """Geodesic distance between two points.
 
@@ -255,6 +263,9 @@ class RiemannianMetric(Connection):
         """
         sq_dist = self.squared_dist(point_a, point_b)
         dist = gs.sqrt(sq_dist)
+
+        dist = gs.to_ndarray(dist, to_ndim=1)
+        dist = gs.to_ndarray(dist, to_ndim=2, axis=1)
         return dist
 
     def diameter(self, points):

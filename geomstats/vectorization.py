@@ -35,7 +35,7 @@ def squeeze_output_dim_0(initial_ndims, point_types):
         Boolean deciding whether to squeeze dim 0 of the output.
     """
     for ndim, point_type in zip(initial_ndims, point_types):
-        if point_type != 'else':
+        if point_type != 'else' and ndim is not None:
             vect_ndim = POINT_TYPES_TO_NDIMS[point_type]
             assert ndim <= vect_ndim
             if ndim == vect_ndim:
@@ -46,8 +46,10 @@ def squeeze_output_dim_0(initial_ndims, point_types):
 def is_scalar(vect_array):
     """Test if an array represents a scalar."""
     has_ndim_2 = vect_array.ndim == 2
+    if not has_ndim_2:
+        return False
     has_singleton_dim_1 = vect_array.shape[1] == 1
-    return has_ndim_2 and has_singleton_dim_1
+    return has_singleton_dim_1
 
 
 def squeeze_output_dim_1(result, initial_shapes, point_types):
@@ -78,7 +80,7 @@ def squeeze_output_dim_1(result, initial_shapes, point_types):
         return False
 
     for shape, point_type in zip(initial_shapes, point_types):
-        if point_type != 'else':
+        if point_type != 'else' and shape is not None:
             ndim = len(shape)
             if point_type == 'scalar':
                 assert ndim <= 2
@@ -90,10 +92,9 @@ def squeeze_output_dim_1(result, initial_shapes, point_types):
 def decorator(point_types):
     """Vectorize geomstats functions.
 
-    This decorator assumes that its function is coded using
-    the following conventions:
-    - all input parameters are fully-vectorized,
-    - all outputs are fully-vectorized,
+    This decorator assumes that its function:
+    - requires fully-vectorized inputs,
+    - returns fully-vectorized outputs,
 
     where "fully-vectorized" means that:
     - one scalar has shape [1, 1],
@@ -102,8 +103,10 @@ def decorator(point_types):
     - n d-D vectors have shape [n, d],
     etc.
 
-    The decorator enables flexibility in the input shapes,
-    and adapt the output shapes to match the users' expectations.
+    The decorator:
+    - converts the inputs into fully-vectorized inputs,
+    - calls the function,
+    - adapts the output shapes to match the users' expectations.
 
     Parameters
     ----------
@@ -117,19 +120,20 @@ def decorator(point_types):
             initial_ndims = []
 
             for i_arg, arg in enumerate(args):
+                # Enumerate args that have been input (not default args)
                 point_type = point_types[i_arg]
 
                 if point_type == 'scalar':
                     arg = gs.array(arg)
 
-                if point_type == 'else':
+                if point_type == 'else' or arg is None:
                     initial_shapes.append(None)
                     initial_ndims.append(None)
                 else:
                     initial_shapes.append(arg.shape)
                     initial_ndims.append(gs.ndim(arg))
 
-                if point_type == 'else':
+                if point_type == 'else' or arg is None:
                     vect_arg = arg
                 elif point_type == 'scalar':
                     vect_arg = gs.to_ndarray(arg, to_ndim=1)
@@ -141,10 +145,12 @@ def decorator(point_types):
             result = function(*vect_args, **kwargs)
 
             if squeeze_output_dim_1(result, initial_shapes, point_types):
-                result = gs.squeeze(result, axis=1)
+                if result.shape[1] == 1:
+                    result = gs.squeeze(result, axis=1)
 
             if squeeze_output_dim_0(initial_ndims, point_types):
-                result = gs.squeeze(result, axis=0)
+                if result.shape[0] == 1:
+                    result = gs.squeeze(result, axis=0)
             return result
         return wrapper
     return aux_decorator
