@@ -5,6 +5,7 @@ import math
 import autograd
 
 import geomstats.backend as gs
+import geomstats.vectorization
 from geomstats.geometry.connection import Connection
 
 
@@ -121,6 +122,7 @@ class RiemannianMetric(Connection):
         christoffels = 0.5 * (term_1 + term_2 + term_3)
         return christoffels
 
+    @geomstats.vectorization.decorator(['vector', 'vector', 'vector'])
     def inner_product(self, tangent_vec_a, tangent_vec_b, base_point=None):
         """Inner product between two tangent vectors at a base point.
 

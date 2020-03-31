@@ -10,36 +10,21 @@ import geomstats.vectorization
 
 class TestVectorizationMethods(geomstats.tests.TestCase):
     def setUp(self):
-<<<<<<< HEAD
         @geomstats.vectorization.decorator(['vector', 'vector'])
-=======
-        @geomstats.vectorization.decorator(
-            ['vector', 'vector'])
->>>>>>> Adapt decorator to accomodate optional arguments
         def foo(tangent_vec_a, tangent_vec_b):
             result = gs.einsum(
                 'ni,ni->ni', tangent_vec_a, tangent_vec_b)
             result = helper.to_vector(result)
             return result
 
-<<<<<<< HEAD
         @geomstats.vectorization.decorator(['vector', 'vector'])
-=======
-        @geomstats.vectorization.decorator(
-            ['vector', 'vector'])
->>>>>>> Adapt decorator to accomodate optional arguments
         def foo_scalar_output(tangent_vec_a, tangent_vec_b):
             result = gs.einsum(
                 'ni,ni->n', tangent_vec_a, tangent_vec_b)
             result = helper.to_scalar(result)
             return result
 
-<<<<<<< HEAD
         @geomstats.vectorization.decorator(['vector', 'vector', 'scalar'])
-=======
-        @geomstats.vectorization.decorator(
-            ['vector', 'vector', 'scalar'])
->>>>>>> Adapt decorator to accomodate optional arguments
         def foo_scalar_input_output(tangent_vec_a, tangent_vec_b, in_scalar):
             aux = gs.einsum(
                 'ni,ni->n', tangent_vec_a, tangent_vec_b)
@@ -47,12 +32,7 @@ class TestVectorizationMethods(geomstats.tests.TestCase):
             result = helper.to_scalar(result)
             return result
 
-<<<<<<< HEAD
         @geomstats.vectorization.decorator(['vector', 'vector', 'scalar'])
-=======
-        @geomstats.vectorization.decorator(
-            ['vector', 'vector', 'scalar'])
->>>>>>> Adapt decorator to accomodate optional arguments
         def foo_optional_input(tangent_vec_a, tangent_vec_b, in_scalar=None):
             if in_scalar is None:
                 in_scalar = gs.array([[1.]])
@@ -62,7 +42,6 @@ class TestVectorizationMethods(geomstats.tests.TestCase):
             result = helper.to_scalar(result)
             return result
 
-<<<<<<< HEAD
         @geomstats.vectorization.decorator(
             ['else', 'vector', 'else', 'vector', 'scalar'])
         def foo_else(else_a, tangent_vec_a, else_b, tangent_vec_b):
@@ -71,16 +50,12 @@ class TestVectorizationMethods(geomstats.tests.TestCase):
             result = helper.to_scalar(result)
             return result
 
-=======
->>>>>>> Adapt decorator to accomodate optional arguments
         self.foo = foo
         self.foo_scalar_output = foo_scalar_output
         self.foo_scalar_input_output = foo_scalar_input_output
         self.foo_optional_input = foo_optional_input
-<<<<<<< HEAD
         self.foo_else = foo_else
-=======
->>>>>>> Adapt decorator to accomodate optional arguments
+        self.foo_else = foo_else
 
     def test_decorator_with_squeeze_dim0(self):
         vec_a = gs.array([1, 2, 3])
@@ -142,7 +117,6 @@ class TestVectorizationMethods(geomstats.tests.TestCase):
         expected = 2
 
         self.assertAllClose(result, expected)
-<<<<<<< HEAD
 
     def test_decorator_else(self):
         vec_a = gs.array([1, 2, 3])
@@ -153,5 +127,3 @@ class TestVectorizationMethods(geomstats.tests.TestCase):
         expected = 4
 
         self.assertAllClose(result, expected)
-=======
->>>>>>> Adapt decorator to accomodate optional arguments
