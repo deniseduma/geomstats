@@ -91,7 +91,7 @@ def decorator(point_types):
     """Vectorize geomstats functions.
 
     This decorator assumes that its function:
-    - works with fully-vectorized inputs,
+    - requires fully-vectorized inputs,
     - returns fully-vectorized outputs,
 
     where "fully-vectorized" means that:
@@ -120,6 +120,7 @@ def decorator(point_types):
             initial_ndims = []
 
             for i_arg, arg in enumerate(args):
+                # Enumerate args that have been input (not default args)
                 point_type = point_types[i_arg]
 
                 if point_type == 'scalar':
