@@ -85,7 +85,7 @@ def squeeze_output_dim_1(result, initial_shapes, point_types):
     return True
 
 
-def decorator(param_names, point_types):
+def decorator(point_types):
     """Vectorize geomstats functions.
 
     This decorator assumes that its function is coded using
@@ -105,17 +105,17 @@ def decorator(param_names, point_types):
 
     Parameters
     ----------
-    param_names : list
-        Parameters names to be vectorized.
     point_types : list
-        Associated list of their point_types.
+        List of inputs' point_types, including for optional inputs.
     """
     def aux_decorator(function):
         def wrapper(*args, **kwargs):
             vect_args = []
             initial_shapes = []
             initial_ndims = []
-            for arg, point_type in zip(args, point_types):
+
+            for i_arg, arg in enumerate(args):
+                point_type = point_types[i_arg]
                 if point_type == 'scalar':
                     arg = gs.array(arg)
                 initial_shapes.append(arg.shape)
