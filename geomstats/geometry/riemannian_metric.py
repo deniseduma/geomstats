@@ -129,57 +129,28 @@ class RiemannianMetric(Connection):
         Parameters
         ----------
         tangent_vec_a: array-like, shape=[n_samples, dimension]
-                                   or shape=[1, dimension]
+                                   or shape=[dimension,]
         tangent_vec_b: array-like, shape=[n_samples, dimension]
-                                   or shape=[1, dimension]
+                                   or shape=[dimension,]
         base_point: array-like, shape=[n_samples, dimension]
-                                or shape=[1, dimension]
+                                or shape=[dimension]
 
         Returns
         -------
         inner_product : array-like, shape=[n_samples,]
         """
-        n_tangent_vec_a = gs.shape(tangent_vec_a)[0]
-        n_tangent_vec_b = gs.shape(tangent_vec_b)[0]
-
         inner_prod_mat = self.inner_product_matrix(base_point)
         inner_prod_mat = gs.to_ndarray(inner_prod_mat, to_ndim=3)
-        n_mats = gs.shape(inner_prod_mat)[0]
 
-        if n_tangent_vec_a != n_mats:
-            if n_tangent_vec_a == 1:
-                tangent_vec_a = gs.squeeze(tangent_vec_a, axis=0)
-                einsum_str_a = 'j,njk->nk'
-            elif n_mats == 1:
-                inner_prod_mat = gs.squeeze(inner_prod_mat, axis=0)
-                einsum_str_a = 'nj,jk->nk'
-            else:
-                raise ValueError('Shape mismatch for einsum.')
-        else:
-            einsum_str_a = 'nj,njk->nk'
-
-        aux = gs.einsum(einsum_str_a, tangent_vec_a, inner_prod_mat)
-        n_auxs, _ = gs.shape(aux)
-
-        if n_tangent_vec_b != n_auxs:
-            if n_auxs == 1:
-                aux = gs.squeeze(aux, axis=0)
-                einsum_str_b = 'k,nk->n'
-            elif n_tangent_vec_b == 1:
-                tangent_vec_b = gs.squeeze(tangent_vec_b, axis=0)
-                einsum_str_b = 'nk,k->n'
-            else:
-                raise ValueError('Shape mismatch for einsum.')
-        else:
-            einsum_str_b = 'nk,nk->n'
-
-        inner_prod = gs.einsum(einsum_str_b, aux, tangent_vec_b)
+        # TODO(ninamiolane): Overload gs.einsum for tensorflow backend
+        aux = gs.einsum('...j,...jk->...k', tangent_vec_a, inner_prod_mat)
+        inner_prod = gs.einsum('...k,...k->...', aux, tangent_vec_b)
+        inner_prod = gs.to_ndarray(inner_prod, to_ndim=1)
         inner_prod = gs.to_ndarray(inner_prod, to_ndim=2, axis=1)
 
         assert gs.ndim(inner_prod) == 2, inner_prod.shape
         return inner_prod
 
-    @geomstats.vectorization.decorator(['else', 'vector', 'vector'])
     def squared_norm(self, vector, base_point=None):
         """Compute the square of the norm of a vector.
 
@@ -196,11 +167,8 @@ class RiemannianMetric(Connection):
         sq_norm : array-like, shape=[n_samples,]
         """
         sq_norm = self.inner_product(vector, vector, base_point)
-        sq_norm = gs.to_ndarray(sq_norm, to_ndim=1)
-        sq_norm = gs.to_ndarray(sq_norm, to_ndim=2, axis=1)
         return sq_norm
 
-    @geomstats.vectorization.decorator(['else', 'vector', 'vector'])
     def norm(self, vector, base_point=None):
         """Compute norm of a vector.
 
@@ -221,11 +189,8 @@ class RiemannianMetric(Connection):
         """
         sq_norm = self.squared_norm(vector, base_point)
         norm = gs.sqrt(sq_norm)
-        norm = gs.to_ndarray(norm, to_ndim=1)
-        norm = gs.to_ndarray(norm, to_ndim=2, axis=1)
         return norm
 
-    @geomstats.vectorization.decorator(['else', 'vector', 'vector'])
     def squared_dist(self, point_a, point_b):
         """Squared geodesic distance between two points.
 
@@ -240,12 +205,8 @@ class RiemannianMetric(Connection):
         """
         log = self.log(point=point_b, base_point=point_a)
         sq_dist = self.squared_norm(vector=log, base_point=point_a)
-
-        sq_dist = gs.to_ndarray(sq_dist, to_ndim=1)
-        sq_dist = gs.to_ndarray(sq_dist, to_ndim=2, axis=1)
         return sq_dist
 
-    @geomstats.vectorization.decorator(['else', 'vector', 'vector'])
     def dist(self, point_a, point_b):
         """Geodesic distance between two points.
 
@@ -263,9 +224,6 @@ class RiemannianMetric(Connection):
         """
         sq_dist = self.squared_dist(point_a, point_b)
         dist = gs.sqrt(sq_dist)
-
-        dist = gs.to_ndarray(dist, to_ndim=1)
-        dist = gs.to_ndarray(dist, to_ndim=2, axis=1)
         return dist
 
     def diameter(self, points):
