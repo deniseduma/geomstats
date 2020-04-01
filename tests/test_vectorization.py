@@ -55,7 +55,6 @@ class TestVectorizationMethods(geomstats.tests.TestCase):
         self.foo_scalar_input_output = foo_scalar_input_output
         self.foo_optional_input = foo_optional_input
         self.foo_else = foo_else
-        self.foo_else = foo_else
 
     def test_decorator_with_squeeze_dim0(self):
         vec_a = gs.array([1, 2, 3])
