@@ -4,6 +4,7 @@ i.e. the Lie group of rotations in n dimensions.
 """
 
 import geomstats.backend as gs
+import geomstats.vectorization
 from geomstats import algebra_utils
 from geomstats.geometry.embedded_manifold import EmbeddedManifold
 from geomstats.geometry.general_linear import GeneralLinear
@@ -383,6 +384,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return rot_mat
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def skew_matrix_from_vector(self, vec):
         """Get the skew-symmetric matrix derived from the vector.
 
@@ -399,9 +401,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         -------
         skew_mat : array-like, shape=[n_samples, n, n]
         """
-        vec = gs.to_ndarray(vec, to_ndim=2)
-        n_vecs = vec.shape[0]
-        vec_dim = gs.shape(vec)[1]
+        n_vecs, vec_dim = gs.shape(vec)
 
         if self.n == 2:  # SO(2)
             id_skew = gs.array([[[0., 1.], [-1., 0.]]] * n_vecs)
@@ -458,6 +458,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 skew_mat[i] = skew_mat[i] - gs.transpose(skew_mat[i])
         return skew_mat
 
+    @geomstats.vectorization.decorator(['else', 'matrix'])
     def vector_from_skew_matrix(self, skew_mat):
         """Derive a vector from the skew-symmetric matrix.
 
@@ -475,7 +476,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         -------
         vec : array-like, shape=[n_samples, dimension]
         """
-        skew_mat = gs.to_ndarray(skew_mat, to_ndim=3)
         n_skew_mats, mat_dim_1, _ = skew_mat.shape
 
         vec_dim = self.dimension
@@ -499,6 +499,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return vec
 
+    @geomstats.vectorization.decorator(['else', 'matrix'])
     def rotation_vector_from_matrix(self, rot_mat):
         r"""Convert rotation matrix (in 3D) to rotation vector (axis-angle).
 
@@ -528,7 +529,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         -------
         regularized_rot_vec : array-like, shape=[n_samples, dimension]
         """
-        rot_mat = gs.to_ndarray(rot_mat, to_ndim=3)
         n_rot_mats, _, _ = rot_mat.shape
 
         if self.n == 3:
@@ -660,6 +660,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return self.regularize(rot_vec, point_type='vector')
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def matrix_from_rotation_vector(self, rot_vec):
         """Convert rotation vector to rotation matrix.
 
@@ -717,6 +718,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return rot_mat
 
+    @geomstats.vectorization.decorator(['else', 'matrix'])
     def quaternion_from_matrix(self, rot_mat):
         """Convert a rotation matrix into a unit quaternion.
 
@@ -732,13 +734,12 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             raise ValueError(
                 'The quaternion representation does not exist'
                 ' for rotations in %d dimensions.' % self.n)
-        rot_mat = gs.to_ndarray(rot_mat, to_ndim=3)
-
         rot_vec = self.rotation_vector_from_matrix(rot_mat)
         quaternion = self.quaternion_from_rotation_vector(rot_vec)
 
         return quaternion
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def quaternion_from_rotation_vector(self, rot_vec):
         """Convert a rotation vector into a unit quaternion.
 
@@ -775,6 +776,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return quaternion
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def rotation_vector_from_quaternion(self, quaternion):
         """Convert a unit quaternion into a rotation vector.
 
@@ -790,7 +792,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             raise ValueError(
                 'The quaternion representation does not exist'
                 ' for rotations in %d dimensions.' % self.n)
-        quaternion = gs.to_ndarray(quaternion, to_ndim=2)
 
         cos_half_angle = quaternion[:, 0]
         cos_half_angle = gs.clip(cos_half_angle, -1, 1)
@@ -814,6 +815,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         rot_vec = self.regularize(rot_vec, point_type='vector')
         return rot_vec
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def matrix_from_quaternion(self, quaternion):
         """Convert a unit quaternion into a rotation vector.
 
@@ -829,7 +831,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             raise ValueError(
                 'The quaternion representation does not exist'
                 ' for rotations in %d dimensions.' % self.n)
-        quaternion = gs.to_ndarray(quaternion, to_ndim=2)
         n_quaternions, _ = quaternion.shape
 
         w, x, y, z = gs.hsplit(quaternion, 4)
@@ -859,6 +860,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return rot_mat
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def matrix_from_tait_bryan_angles_extrinsic_xyz(self, tait_bryan_angles):
         """Convert Tait-Bryan angles to rot mat in extrensic coords (xyz).
 
@@ -884,7 +886,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             raise ValueError(
                 'The Tait-Bryan angles representation'
                 ' does not exist for rotations in %d dimensions.' % self.n)
-        tait_bryan_angles = gs.to_ndarray(tait_bryan_angles, to_ndim=2)
         n_tait_bryan_angles, _ = tait_bryan_angles.shape
 
         rot_mat = gs.zeros((n_tait_bryan_angles,) + (self.n,) * 2)
@@ -917,6 +918,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             rot_mat[i] = gs.hstack((column_1, column_2, column_3))
         return rot_mat
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def matrix_from_tait_bryan_angles_extrinsic_zyx(self, tait_bryan_angles):
         """Convert Tait-Bryan angles to rot mat in extrensic coords (zyx).
 
@@ -942,7 +944,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             raise ValueError(
                 'The Tait-Bryan angles representation'
                 ' does not exist for rotations in %d dimensions.' % self.n)
-        tait_bryan_angles = gs.to_ndarray(tait_bryan_angles, to_ndim=2)
         n_tait_bryan_angles, _ = tait_bryan_angles.shape
 
         rot_mat = gs.zeros((n_tait_bryan_angles,) + (self.n,) * 2)
@@ -976,6 +977,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             rot_mat[i] = gs.hstack((column_1, column_2, column_3))
         return rot_mat
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def matrix_from_tait_bryan_angles(self, tait_bryan_angles,
                                       extrinsic_or_intrinsic='extrinsic',
                                       order='zyx'):
@@ -1012,8 +1014,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 'The Tait-Bryan angles representation'
                 ' does not exist for rotations in %d dimensions.' % self.n)
 
-        tait_bryan_angles = gs.to_ndarray(tait_bryan_angles, to_ndim=2)
-
         extrinsic_zyx = (extrinsic_or_intrinsic == 'extrinsic'
                          and order == 'zyx')
         intrinsic_xyz = (extrinsic_or_intrinsic == 'intrinsic'
@@ -1047,6 +1047,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return rot_mat
 
+    @geomstats.vectorization.decorator(['else', 'matrix'])
     def tait_bryan_angles_from_matrix(self, rot_mat,
                                       extrinsic_or_intrinsic='extrinsic',
                                       order='zyx'):
@@ -1078,7 +1079,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 'The Tait-Bryan angles representation'
                 ' does not exist for rotations in %d dimensions.' % self.n)
 
-        rot_mat = gs.to_ndarray(rot_mat, to_ndim=3)
         quaternion = self.quaternion_from_matrix(rot_mat)
         tait_bryan_angles = self.tait_bryan_angles_from_quaternion(
             quaternion,
@@ -1087,6 +1087,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return tait_bryan_angles
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def quaternion_from_tait_bryan_angles_intrinsic_xyz(
             self, tait_bryan_angles):
         """Convert Tait-Bryan angles to into unit quaternion.
@@ -1107,7 +1108,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 'The Tait-Bryan angles representation'
                 ' and the quaternion representation'
                 ' do not exist for rotations in %d dimensions.' % self.n)
-        tait_bryan_angles = gs.to_ndarray(tait_bryan_angles, to_ndim=2)
         n_tait_bryan_angles, _ = tait_bryan_angles.shape
         quaternion = gs.zeros((n_tait_bryan_angles, 4))
 
@@ -1118,6 +1118,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         quaternion = self.quaternion_from_matrix(matrix)
         return quaternion
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def quaternion_from_tait_bryan_angles(self, tait_bryan_angles,
                                           extrinsic_or_intrinsic='extrinsic',
                                           order='zyx'):
@@ -1140,8 +1141,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 'The Tait-Bryan angles representation'
                 ' and the quaternion representation'
                 ' do not exist for rotations in %d dimensions.' % self.n)
-
-        tait_bryan_angles = gs.to_ndarray(tait_bryan_angles, to_ndim=2)
 
         extrinsic_zyx = (extrinsic_or_intrinsic == 'extrinsic'
                          and order == 'zyx')
@@ -1179,6 +1178,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return quat
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def rotation_vector_from_tait_bryan_angles(
             self,
             tait_bryan_angles,
@@ -1214,6 +1214,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         rot_vec = self.regularize(rot_vec, point_type='vector')
         return rot_vec
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def tait_bryan_angles_from_quaternion_intrinsic_zyx(self, quaternion):
         """Convert quaternion to tait bryan representation of order zyx.
 
@@ -1230,7 +1231,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 'The Tait-Bryan angles representation'
                 ' and the quaternion representation'
                 ' do not exist for rotations in %d dimensions.' % self.n)
-        quaternion = gs.to_ndarray(quaternion, to_ndim=2)
 
         w, x, y, z = gs.hsplit(quaternion, 4)
         angle_1 = gs.arctan2(y * z + w * x,
@@ -1242,6 +1242,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             [angle_1, angle_2, angle_3], axis=1)
         return tait_bryan_angles
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def tait_bryan_angles_from_quaternion_intrinsic_xyz(self, quaternion):
         """Convert quaternion to tait bryan representation of order xyz.
 
@@ -1258,7 +1259,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 'The Tait-Bryan angles representation'
                 ' and the quaternion representation'
                 ' do not exist for rotations in %d dimensions.' % self.n)
-        quaternion = gs.to_ndarray(quaternion, to_ndim=2)
 
         w, x, y, z = gs.hsplit(quaternion, 4)
 
@@ -1272,6 +1272,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             [angle_1, angle_2, angle_3], axis=1)
         return tait_bryan_angles
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def tait_bryan_angles_from_quaternion(
             self, quaternion, extrinsic_or_intrinsic='extrinsic', order='zyx'):
         """Convert quaternion to a rotation in form angle_1, angle_2, angle_3.
@@ -1293,8 +1294,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 'The Tait-Bryan angles representation'
                 ' and the quaternion representation'
                 ' do not exist for rotations in %d dimensions.' % self.n)
-
-        quaternion = gs.to_ndarray(quaternion, to_ndim=2)
 
         extrinsic_zyx = (extrinsic_or_intrinsic == 'extrinsic'
                          and order == 'zyx')
@@ -1329,6 +1328,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return tait_bryan
 
+    @geomstats.vectorization.decorator(['else', 'vector'])
     def tait_bryan_angles_from_rotation_vector(
             self, rot_vec, extrinsic_or_intrinsic='extrinsic', order='zyx'):
         """Convert a rotation vector to a rotation given by Tait-Bryan angles.
@@ -1351,8 +1351,6 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             raise ValueError(
                 'The Tait-Bryan angles representation'
                 ' does not exist for rotations in %d dimensions.' % self.n)
-
-        rot_vec = gs.to_ndarray(rot_vec, to_ndim=2)
 
         quaternion = self.quaternion_from_rotation_vector(rot_vec)
         tait_bryan_angles = self.tait_bryan_angles_from_quaternion(
