@@ -402,6 +402,8 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         skew_mat : array-like, shape=[n_samples, n, n]
         """
         n_vecs, vec_dim = gs.shape(vec)
+        print('skew mat from vec: vec.shape')
+        print(vec.shape)
 
         if self.n == 2:  # SO(2)
             id_skew = gs.array([[[0., 1.], [-1., 0.]]] * n_vecs)
@@ -482,7 +484,20 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         vec = gs.zeros((n_skew_mats, vec_dim))
 
         if self.n == 2:  # SO(2)
-            vec = gs.expand_dims(skew_mat[:, 0, 1], axis=1)
+            print('\n')
+            print('skew_mat')
+            print(skew_mat)
+            vec = skew_mat[:, 0, 1]
+            print('vec extracted')
+            print(vec)
+            vec = gs.expand_dims(vec, axis=1)
+            print('vec expand')
+            print(vec)
+            vec = gs.to_ndarray(vec, to_ndim=2)
+            print('vec to nd')
+            print(vec)
+            #vec = gs.array([[scalar]])
+            print('\n')
 
         elif self.n == 3:  # SO(3)
             vec_1 = gs.to_ndarray(skew_mat[:, 2, 1], to_ndim=2, axis=1)
@@ -655,8 +670,14 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
             rot_vec *= (1. + fact)
         else:
+            print('from rot mat to skew mat')
             skew_mat = self.embedding_manifold.log(rot_mat)
+            print('skew mat')
+            print(skew_mat)
             rot_vec = self.vector_from_skew_matrix(skew_mat)
+            rot_vec = gs.to_ndarray(rot_vec, to_ndim=2, axis=1)
+            print('rot_vec end of rot vec from rot mat:')
+            print(rot_vec)
 
         return self.regularize(rot_vec, point_type='vector')
 
@@ -683,14 +704,14 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             coef_1 = gs.zeros_like(angle)
             coef_2 = gs.zeros_like(angle)
 
-            # This avois dividing by 0.
+            # This avoids dividing by 0.
             mask_0 = gs.isclose(angle, 0.)
             mask_0_float = gs.cast(mask_0, gs.float32) + self.epsilon
 
             coef_1 += mask_0_float * (1. - (angle ** 2) / 6.)
             coef_2 += mask_0_float * (1. / 2. - angle ** 2)
 
-            # This avois dividing by 0.
+            # This avoids dividing by 0.
             mask_else = ~mask_0
             mask_else_float = gs.cast(mask_else, gs.float32) + self.epsilon
 
@@ -713,6 +734,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
             rot_mat = term_1 + term_2
 
         else:
+            print('using skew before exp')
             skew_mat = self.skew_matrix_from_vector(rot_vec)
             rot_mat = self.embedding_manifold.exp(skew_mat)
 
@@ -1381,13 +1403,26 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
         point_b = self.regularize(point_b, point_type=point_type)
 
         if point_type == 'vector':
+            print('compose: vec a')
+            print(point_a)
+            print('compose: vec b')
+            print(point_b)
             point_a = self.matrix_from_rotation_vector(point_a)
             point_b = self.matrix_from_rotation_vector(point_b)
+            print('compose: rotation mat a')
+            print(point_a)
+            print('compose: rotation mat b')
+            print(point_b)
 
         point_prod = gs.einsum('...jk,...kl->...jl', point_a, point_b)
+        print('compose: prod mat')
+        print(point_prod)
 
         if point_type == 'vector':
             point_prod = self.rotation_vector_from_matrix(point_prod)
+            point_prod = gs.to_ndarray(point_prod, to_ndim=2, axis=1)
+            print('compose: prod vec')
+            print(point_prod)
 
         point_prod = self.regularize(
             point_prod, point_type=point_type)
