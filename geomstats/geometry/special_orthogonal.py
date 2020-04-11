@@ -405,8 +405,8 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         if self.n == 2:  # SO(2)
             id_skew = gs.array([[[0., 1.], [-1., 0.]]] * n_vecs)
-            print(vec.shape)
-            print(id_skew.shape)
+            # print(vec.shape)
+            # print(id_skew.shape)
             skew_mat = gs.einsum(
                 '...ij,...i->...ij', gs.cast(id_skew, gs.float32), vec)
 
@@ -460,7 +460,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
                 skew_mat[i] = skew_mat[i] - gs.transpose(skew_mat[i])
         return skew_mat
 
-    @geomstats.vectorization.decorator(['else', 'matrix'])
+    @geomstats.vectorization.decorator(['else', 'matrix', 'no_scalar_result'])
     def vector_from_skew_matrix(self, skew_mat):
         """Derive a vector from the skew-symmetric matrix.
 
@@ -503,7 +503,7 @@ class SpecialOrthogonal(LieGroup, EmbeddedManifold):
 
         return vec
 
-    @geomstats.vectorization.decorator(['else', 'matrix'])
+    @geomstats.vectorization.decorator(['else', 'matrix', 'no_scalar_result'])
     def rotation_vector_from_matrix(self, rot_mat):
         r"""Convert rotation matrix (in 3D) to rotation vector (axis-angle).
 
