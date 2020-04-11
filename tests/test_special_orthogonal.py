@@ -258,7 +258,7 @@ class TestSpecialOrthogonalMethods(geomstats.tests.TestCase):
                 point = self.elements_all[3]['with_angle_0']
                 self.assertAllClose(gs.linalg.norm(point), 0.)
                 result = group.regularize(point)
-                expected = helper.to_vector(point)
+                expected = point
                 self.assertAllClose(result, expected)
 
                 less_than_pi = ['with_angle_close_0',
@@ -266,7 +266,7 @@ class TestSpecialOrthogonalMethods(geomstats.tests.TestCase):
                 for angle_type in less_than_pi:
                     point = self.elements_all[3][angle_type]
                     result = group.regularize(point)
-                    expected = helper.to_vector(point)
+                    expected = point
                     self.assertAllClose(result, expected)
 
                 # Note: by default, the rotation vector is inverted by
@@ -274,14 +274,13 @@ class TestSpecialOrthogonalMethods(geomstats.tests.TestCase):
                 angle_type = 'with_angle_pi'
                 point = self.elements_all[3][angle_type]
                 result = group.regularize(point)
-                expected = helper.to_vector(point)
+                expected = point
                 self.assertAllClose(result, expected)
 
                 angle_type = 'with_angle_close_pi_high'
                 point = self.elements_all[3][angle_type]
                 result = group.regularize(point)
-                expected = helper.to_vector(
-                    point / gs.linalg.norm(point) * gs.pi)
+                expected = point / gs.linalg.norm(point) * gs.pi
                 self.assertAllClose(result, expected)
 
                 in_pi_2pi = ['with_angle_in_pi_2pi',
@@ -296,14 +295,13 @@ class TestSpecialOrthogonalMethods(geomstats.tests.TestCase):
                     point_initial = point
                     result = group.regularize(point)
 
-                    expected = helper.to_vector(
-                        - (new_angle / angle) * point_initial)
+                    expected = - (new_angle / angle) * point_initial
                     self.assertAllClose(result, expected)
 
                 angle_type = 'with_angle_2pi'
                 point = self.elements_all[3][angle_type]
                 result = group.regularize(point)
-                expected = gs.array([[0., 0., 0.]])
+                expected = gs.array([0., 0., 0.])
                 self.assertAllClose(result, expected)
 
                 angle_type = 'with_angle_close_2pi_high'
@@ -312,15 +310,14 @@ class TestSpecialOrthogonalMethods(geomstats.tests.TestCase):
                 new_angle = angle - 2 * gs.pi
 
                 result = group.regularize(point)
-                expected = helper.to_vector(
-                    new_angle * point / angle)
+                expected = new_angle * point / angle
                 self.assertAllClose(result, expected)
 
             else:
                 angle = 0.345
-                point = gs.array([[
+                point = gs.array([
                     [gs.cos(angle), -gs.sin(angle)],
-                    [gs.sin(angle), gs.cos(angle)]]])
+                    [gs.sin(angle), gs.cos(angle)]])
                 result = group.regularize(point)
                 expected = point
                 self.assertAllClose(result, expected)
