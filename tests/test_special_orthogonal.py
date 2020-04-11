@@ -221,7 +221,7 @@ class TestSpecialOrthogonalMethods(geomstats.tests.TestCase):
                 group = self.so[n]
                 point = group.random_uniform(point_type=point_type)
                 result = group.belongs(point, point_type=point_type)
-                expected = gs.array([[True]])
+                expected = True
                 self.assertAllClose(result, expected)
 
     @geomstats.tests.np_only
@@ -231,7 +231,7 @@ class TestSpecialOrthogonalMethods(geomstats.tests.TestCase):
             group = self.so[n]
             points = group.random_uniform(n_samples=n_samples)
             result = group.belongs(points)
-            expected = gs.array([[True]] * n_samples)
+            expected = gs.array([True] * n_samples)
             self.assertAllClose(result, expected)
 
     @geomstats.tests.np_only
